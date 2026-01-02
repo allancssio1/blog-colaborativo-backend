@@ -59,7 +59,7 @@ class JWTManager
 
     private function createSignature(string $data): string
     {
-        $hash = hash_hmac('sha256', $this->secret, true);
+        $hash = hash_hmac('sha256', $data, $this->secret, true);
         return $this->base64UrlEncode($hash);
     }
 

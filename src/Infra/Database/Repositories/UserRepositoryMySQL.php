@@ -9,7 +9,7 @@ use App\Domain\Entities\User;
 use App\Domain\Repositories\UserRepository;
 use App\Infra\Database\Connection;
 
-class MySQLUserRepository implements UserRepository
+class UserRepositoryMySQL implements UserRepository
 {
     private \PDO $connection;
 
@@ -29,7 +29,7 @@ class MySQLUserRepository implements UserRepository
         $stmt->execute([
             ':id' => $user->getId()->__toString(),
             ':name' => $user->getName(),
-            ':emal' => $user->getEmail()->__toString(),
+            ':email' => $user->getEmail()->__toString(),
             ':password' => $user->getPassword()->getHashed(),
             ':created_at' => $user->getCreatedAt()->format('Y-m-d H:i:s'),
         ]);

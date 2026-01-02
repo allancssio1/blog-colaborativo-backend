@@ -16,10 +16,10 @@ class Env
             'DB_USER' => ['type' => 'string', 'required' => true],
             'DB_PASSWORD' => ['type' => 'string', 'required' => true],
             'DB_NAME' => ['type' => 'string', 'required' => true],
-            'JWT_SECRET' => ['type' => 'string', 'required' => true, 'minLength' => 32],
+            'JWT_SECRET' => ['type' => 'string', 'required' => true],
             'JWT_EXPIRES_IN' => ['type' => 'int', 'required' => true, 'default' => 86400],
             'APP_ENV' => ['type' => 'enum', 'required' => true, 'values' => ['development', 'production', 'test'], 'default' => 'development'],
-            'CORS_ORIGIN' => ['type' => 'url', 'required' => true],
+            'CORS_ORIGIN' => ['type' => 'string', 'required' => false, 'default' => '*'],
         ];
 
         $errors = [];
@@ -27,13 +27,20 @@ class Env
         foreach ($schema as $key => $rules) {
             $value = $_ENV[$key] ?? null;
 
+            // Handle empty values with defaults
+            if (empty($value) && isset($rules['default'])) {
+                self::$validated[$key] = $rules['default'];
+                continue;
+            }
+
             // Required check
             if ($rules['required'] && empty($value)) {
-                if (isset($rules['default'])) {
-                    self::$validated[$key] = $rules['default'];
-                    continue;
-                }
                 $errors[] = "Missing required env variable: {$key}";
+                continue;
+            }
+
+            // Skip validation for optional empty values
+            if (!$rules['required'] && empty($value)) {
                 continue;
             }
 

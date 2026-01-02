@@ -7,7 +7,7 @@ use App\Domain\Entities\Post;
 use App\Domain\Repositories\PostRepository;
 use App\Infra\Database\Connection;
 
-class MySQLPostRepository implements PostRepository
+class PostRepositoryMySQL implements PostRepository
 {
     private \PDO $connection;
 

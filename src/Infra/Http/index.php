@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../../../vendor/autoload.php';
 
 use Dotenv\Dotenv;
 use App\Infra\Env\Env;
 
 
-// Load environment variables (if needed in the future)
-$dotenv = Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->load();
+// Load environment variables from .env file (only if exists - Docker uses env vars directly)
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../..');
+$dotenv->safeLoad();
 
 Env::validate();
 
 // Basic headers for API
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *' . Env::getString('CORS_ORIGIN'));
+header('Access-Control-Allow-Origin: ' . Env::getString('CORS_ORIGIN') ?? '*');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 $router = new \App\Infra\Http\Router();
-$userRepository = new \App\Infra\Database\Repositories\MySQLUserRepository();
-$postRepository = new \App\Infra\Database\Repositories\MySQLPostRepository();
+$userRepository = new \App\Infra\Database\Repositories\UserRepositoryMySQL();
+$postRepository = new \App\Infra\Database\Repositories\PostRepositoryMySQL();
 $jwtManager = new \App\Infra\Auth\JWTManager();
 $validator = new \App\Infra\Http\Validators\FormValidator();
 
@@ -38,6 +38,8 @@ $authController = new \App\Infra\Http\Controllers\AuthController(
     $jwtManager,
     $validator
 );
+
+$healthController = new \App\Infra\Http\Controllers\HealthController();
 
 $postController = new \App\Infra\Http\Controllers\PostController(
     new \App\Domain\UseCases\Post\CreatePostUseCase($postRepository),
@@ -51,6 +53,7 @@ $postController = new \App\Infra\Http\Controllers\PostController(
 // Rotas públicas
 $router->post('/auth/register', [$authController, 'register']);
 $router->post('/auth/login', [$authController, 'login']);
+$router->get('/health', [$healthController, 'check']);
 $router->get('/posts', [$postController, 'list']);
 $router->get('/posts/{id}', [$postController, 'get']);
 
@@ -70,8 +73,18 @@ $router->delete('/posts/{id}', function ($id) use ($postController) {
     $postController->delete($id);
 });
 
+set_exception_handler(function ($exception) {
+    error_log($exception->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'Internal Server Error',
+        'message' => getenv('APP_ENV') === 'development' ? $exception->getMessage() : null
+    ]);
+});
+
 // Dispatch
 $method = $_SERVER['REQUEST_METHOD'];
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$params = [];
 
-$router->dispatch($method, $path, []);
+$router->dispatch($method, $path, $params);

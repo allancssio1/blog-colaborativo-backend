@@ -35,7 +35,7 @@ class AuthController
         // Validação simplificada
         $errors = $this->validator->validate($data, [
           'name' => ['required', 'min:3'],
-          'email' => ['required'],
+          'email' => ['required',  'email'],
           'password' => ['required'],
         ]);
 

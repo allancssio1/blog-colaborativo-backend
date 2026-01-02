@@ -32,6 +32,7 @@ class FormValidator
         return match ($ruleName) {
             'required' => empty($value) ? "Field {$field} is required" : null,
             'min' => strlen((string) $value) < (int) $param ? "Field {$field} must be at least {$param} characters long" : null,
+            'email' => !filter_var($value, FILTER_VALIDATE_EMAIL) ? "Field {$field} must be a valid email" : null,
             default => null
         };
     }
