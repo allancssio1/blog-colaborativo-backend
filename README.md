@@ -494,6 +494,18 @@ backend/
 └── README.md              # Este arquivo
 ```
 
+### Arquitetura de Repositórios
+
+Os repositórios utilizam métodos semânticos separados para operações de criação e atualização:
+
+- `create(Entity $entity)`: Persiste uma nova entidade no banco de dados
+- `update(Entity $entity)`: Atualiza uma entidade existente no banco de dados
+
+Esta separação garante:
+- Queries SQL otimizadas para cada operação
+- Maior clareza semântica no código
+- Evita workarounds relacionados a limitações do PDO com prepared statements nativos
+
 ## Scripts Composer
 
 ```bash

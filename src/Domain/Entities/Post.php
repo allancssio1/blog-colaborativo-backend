@@ -13,6 +13,7 @@ class Post
     private UUID $authorId;
     private \DateTime $createdAt;
     private \DateTime $updatedAt;
+    private ?string $authorName;
 
     public function __construct(
         UUID $id,
@@ -20,7 +21,8 @@ class Post
         string $content,
         UUID $authorId,
         ?\DateTime $createdAt = null,
-        ?\DateTime $updatedAt = null
+        ?\DateTime $updatedAt = null,
+        ?string $authorName = null
     ) {
         if (empty($title) || strlen($title) < 5) {
             throw new ValidationException(null, 'Title must be at least 5 characters', 401);
@@ -35,6 +37,7 @@ class Post
         $this->authorId = $authorId;
         $this->createdAt = $createdAt ?? new \DateTime();
         $this->updatedAt = $updatedAt ?? new \DateTime();
+        $this->authorName = $authorName;
     }
 
     public function getId(): UUID
@@ -67,6 +70,11 @@ class Post
         return $this->updatedAt;
     }
 
+    public function getAuthorName(): ?string
+    {
+        return $this->authorName;
+    }
+
     public function update(string $title, string $content): void
     {
         if (empty($title) || strlen($title) < 5) {
@@ -90,6 +98,10 @@ class Post
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
             'updated_at' => $this->updatedAt->format('Y-m-d H:i:s'),
         ];
+
+        if ($this->authorName !== null) {
+            $data['author_name'] = $this->authorName;
+        }
 
         if ($includeContent) {
             $data['content'] = $this->content;

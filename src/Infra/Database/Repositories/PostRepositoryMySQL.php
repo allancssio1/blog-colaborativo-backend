@@ -16,12 +16,11 @@ class PostRepositoryMySQL implements PostRepository
         $this->connection = Connection::getInstance();
     }
 
-    public function save(Post $post): void
+    public function create(Post $post): void
     {
         $stmt = $this->connection->prepare(
             'INSERT INTO posts (id, title, content, author_id, created_at, updated_at)
-             VALUES (:id, :title, :content, :author_id, :created_at, :updated_at)
-             ON DUPLICATE KEY UPDATE title = :title, content = :content, updated_at = :updated_at'
+             VALUES (:id, :title, :content, :author_id, :created_at, :updated_at)'
         );
 
         $stmt->execute([
@@ -34,9 +33,32 @@ class PostRepositoryMySQL implements PostRepository
         ]);
     }
 
+    public function update(Post $post): void
+    {
+        $stmt = $this->connection->prepare(
+            'UPDATE posts
+             SET title = :title,
+                 content = :content,
+                 updated_at = :updated_at
+             WHERE id = :id'
+        );
+
+        $stmt->execute([
+            ':id' => $post->getId()->__toString(),
+            ':title' => $post->getTitle(),
+            ':content' => $post->getContent(),
+            ':updated_at' => $post->getUpdatedAt()->format('Y-m-d H:i:s'),
+        ]);
+    }
+
     public function findById(string $id): ?Post
     {
-        $stmt = $this->connection->prepare('SELECT * FROM posts WHERE id = :id');
+        $stmt = $this->connection->prepare(
+            'SELECT p.id, p.title, p.content, p.author_id, p.created_at, p.updated_at, u.name as author_name
+             FROM posts p
+             INNER JOIN users u ON p.author_id = u.id
+             WHERE p.id = :id'
+        );
         $stmt->execute([':id' => $id]);
         $row = $stmt->fetch();
 
@@ -47,10 +69,14 @@ class PostRepositoryMySQL implements PostRepository
         return $this->hydrate($row);
     }
 
-    public function findAll(int $limit = 10, int $offset = 0): array
+    public function findAll(int $limit = 12, int $offset = 0): array
     {
         $stmt = $this->connection->prepare(
-            'SELECT * FROM posts ORDER BY created_at DESC LIMIT :limit OFFSET :offset'
+            'SELECT p.id, p.title, p.content, p.author_id, p.created_at, p.updated_at, u.name as author_name
+             FROM posts p
+             INNER JOIN users u ON p.author_id = u.id
+             ORDER BY p.created_at DESC
+             LIMIT :limit OFFSET :offset'
         );
         $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
@@ -80,7 +106,8 @@ class PostRepositoryMySQL implements PostRepository
             $row['content'],
             new UUID($row['author_id']),
             new \DateTime($row['created_at']),
-            new \DateTime($row['updated_at'])
+            new \DateTime($row['updated_at']),
+            $row['author_name'] ?? null
         );
     }
 }

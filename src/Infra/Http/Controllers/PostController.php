@@ -156,7 +156,8 @@ class PostController
         try {
             $this->deleteUseCase->execute($id, $_REQUEST['user']['id']);
 
-            http_response_code(204);
+            http_response_code(200);
+            echo json_encode(['message' => 'Post deleted successfully']);
         } catch (NotFoundException | DomainException $e) {
             http_response_code($e->getStatusCode());
             echo json_encode(['error' => $e->getMessage()]);

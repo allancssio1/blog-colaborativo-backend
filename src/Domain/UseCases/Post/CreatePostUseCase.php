@@ -21,7 +21,7 @@ class CreatePostUseCase
             new UUID($authorId)
         );
 
-        $this->postRepository->save($post);
+        $this->postRepository->create($post);
 
         return $post;
     }

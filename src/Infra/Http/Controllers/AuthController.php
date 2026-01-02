@@ -46,6 +46,9 @@ class AuthController
         }
 
         try {
+            // O RegisterUserUseCase já verifica se o usuário existe
+
+
             $user = $this->registerUseCase->execute(
                 $data['name'],
                 $data['email'],

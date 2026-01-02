@@ -25,7 +25,7 @@ class UpdatePostUseCase
         }
 
         $post->update($title, $content);
-        $this->postRepository->save($post);
+        $this->postRepository->update($post);
 
         return $post->toArray(true);
     }

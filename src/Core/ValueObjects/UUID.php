@@ -3,7 +3,7 @@
 namespace App\Core\ValueObjects;
 
 use App\Core\Exceptions\ValidationException;
-use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Uuid as RamseyUuid;;
 
 class UUID
 {
@@ -25,12 +25,12 @@ class UUID
 
     private function generateUUID(): string
     {
-        return  Uuid::uuid4();
+        return  RamseyUuid::uuid4();
     }
 
     private function isValidUUID(string $uuid): bool
     {
-        return Uuid::isValid($uuid);
+        return RamseyUuid::isValid($uuid);
     }
 
     public function equals(UUID $other)

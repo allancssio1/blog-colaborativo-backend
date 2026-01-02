@@ -22,8 +22,7 @@ class UserRepositoryMySQL implements UserRepository
     {
         $stmt = $this->connection->prepare(
             'INSERT INTO users (id, name, email, password, created_at)
-             VALUES (:id, :name, :email, :password, :created_at)
-             ON DUPLICATE KEY UPDATE name = :name, email = :email'
+             VALUES (:id, :name, :email, :password, :created_at)'
         );
 
         $stmt->execute([
