@@ -7,14 +7,11 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 use Dotenv\Dotenv;
 use App\Infra\Env\Env;
 
-
-// Load environment variables from .env file (only if exists - Docker uses env vars directly)
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../../..');
 $dotenv->safeLoad();
 
 Env::validate();
 
-// Basic headers for API
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: ' . Env::getString('CORS_ORIGIN') ?? '*');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
@@ -31,7 +28,6 @@ $postRepository = new \App\Infra\Database\Repositories\PostRepositoryMySQL();
 $jwtManager = new \App\Infra\Auth\JWTManager();
 $validator = new \App\Infra\Http\Validators\FormValidator();
 
-// Controllers
 $authController = new \App\Infra\Http\Controllers\AuthController(
     new \App\Domain\UseCases\Auth\RegisterUserUseCase($userRepository),
     new \App\Domain\UseCases\Auth\LoginUserUseCase($userRepository),
@@ -50,14 +46,12 @@ $postController = new \App\Infra\Http\Controllers\PostController(
     $validator
 );
 
-// Rotas públicas
 $router->post('/auth/register', [$authController, 'register']);
 $router->post('/auth/login', [$authController, 'login']);
 $router->get('/health', [$healthController, 'check']);
 $router->get('/posts', [$postController, 'list']);
 $router->get('/posts/{id}', [$postController, 'get']);
 
-// Rotas protegidas
 $router->post('/posts', function () use ($postController) {
     (new \App\Infra\Http\Middleware\AuthMiddleware())->handle();
     $postController->create();
@@ -82,7 +76,6 @@ set_exception_handler(function ($exception) {
     ]);
 });
 
-// Dispatch
 $method = $_SERVER['REQUEST_METHOD'];
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $params = [];

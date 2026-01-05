@@ -32,7 +32,6 @@ class AuthController
     {
         $data = json_decode(file_get_contents('php://input'), true) ?? [];
 
-        // Validação simplificada
         $errors = $this->validator->validate($data, [
           'name' => ['required', 'min:3'],
           'email' => ['required',  'email'],
@@ -46,9 +45,6 @@ class AuthController
         }
 
         try {
-            // O RegisterUserUseCase já verifica se o usuário existe
-
-
             $user = $this->registerUseCase->execute(
                 $data['name'],
                 $data['email'],

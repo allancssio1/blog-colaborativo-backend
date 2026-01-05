@@ -1,7 +1,5 @@
 <?php
 
-// src/Infra/Env/Env.php
-
 namespace App\Infra\Env;
 
 class Env
@@ -27,24 +25,20 @@ class Env
         foreach ($schema as $key => $rules) {
             $value = $_ENV[$key] ?? null;
 
-            // Handle empty values with defaults
             if (empty($value) && isset($rules['default'])) {
                 self::$validated[$key] = $rules['default'];
                 continue;
             }
 
-            // Required check
             if ($rules['required'] && empty($value)) {
                 $errors[] = "Missing required env variable: {$key}";
                 continue;
             }
 
-            // Skip validation for optional empty values
             if (!$rules['required'] && empty($value)) {
                 continue;
             }
 
-            // Type validation
             switch ($rules['type']) {
                 case 'string':
                     if (!is_string($value)) {
@@ -82,7 +76,6 @@ class Env
                     break;
             }
 
-            // String length validation
             if (isset($rules['minLength']) && strlen($value) < $rules['minLength']) {
                 $errors[] = "{$key} must be at least {$rules['minLength']} characters";
             }
